@@ -1,6 +1,7 @@
 import csv
 import requests
 from bs4 import BeautifulSoup
+import json
 
 URL = 'https://www.imdb.com/calendar/?region=MX'
 
@@ -75,6 +76,32 @@ def create_movie(tag):
 
     return (name, categories, casts)
 
+def create_csv_movies_file(movies):
+    with open('movies.csv', 'w') as file:
+        writer = csv.writer(file, delimiter="-")
+        writer.writerow(['name','categories','cast'])
+        
+        for movie in movies:
+            writer.writerow([
+                movie[0],
+                ",".join(movie[1]),
+                ",".join(movie[2]),
+            ])
+     
+def create_json_movies_file(movies):
+    
+    movies_list = [
+        {
+            'name' : movie[0],
+            'categories' : movie[1],
+            'cast' : movie[2]
+        }
+        for movie in movies
+    ]
+    
+    with open('movies.json', 'w', encoding='latin-1') as file:
+        json.dump(movies_list, file, indent = 4)
+
 def main():
     content = get_local_imdb_content()
     
@@ -90,17 +117,8 @@ def main():
     for tag in li_tags:
         movie = create_movie(tag)   
         movies.append(movie)
-           
-    with open('movies.csv', 'w') as file:
-        writer = csv.writer(file, delimiter="-")
-        writer.writerow(['name','categories','cast'])
-        
-        for movie in movies:
-            writer.writerow([
-                movie[0],
-                ",".join(movie[1]),
-                ",".join(movie[2]),
-            ])
-           
+    
+    create_json_movies_file(movies)
+                 
 if __name__ == '__main__':
     main()
